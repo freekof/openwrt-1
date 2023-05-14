@@ -1,0 +1,27 @@
+name: Build OpenWrt Firmware
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: master
+        submodules: true
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libncurses5-dev gawk git gettext libssl-dev xsltproc wget unzip python3 python3-distutils python
+    - name: Prepare for build
+      run: |
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+    - name: Run build
+      run: |
+        make defconfig
+        make -j$(nproc) V=s
